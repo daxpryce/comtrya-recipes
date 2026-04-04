@@ -1,0 +1,21 @@
+depends:
+  - rpmfusion
+
+actions:
+  - action: package.install
+    name: discord
+    where: 'os.distribution=="Fedora"'
+
+  - action: file.download
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    from: https://discord.com/api/download?platform=linux&format=deb
+    to: /tmp/discord.deb
+
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    name: /tmp/discord.deb
+    file: true
+
+  - action: file.remove
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    target: /tmp/discord.deb

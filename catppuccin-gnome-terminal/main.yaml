@@ -1,0 +1,25 @@
+actions:
+  # Download the Catppuccin gnome-terminal installer
+  - action: file.download
+    from: https://raw.githubusercontent.com/catppuccin/gnome-terminal/v1.0.0/install.py
+    to: /tmp/catppuccin-gnome-terminal-install.py
+
+  # Run the installer — installs all four flavours (Latte, Frappé, Macchiato, Mocha)
+  - action: command.run
+    command: python3
+    args:
+      - /tmp/catppuccin-gnome-terminal-install.py
+
+  # Clean up
+  - action: file.remove
+    target: /tmp/catppuccin-gnome-terminal-install.py
+
+  # Set Catppuccin Mocha as the default gnome-terminal profile
+  # UUID is hardcoded by the installer: 95894cfd-82f7-430d-af6e-84d168bc34f5
+  - action: command.run
+    command: gsettings
+    args:
+      - set
+      - org.gnome.Terminal.ProfilesList
+      - default
+      - 95894cfd-82f7-430d-af6e-84d168bc34f5

@@ -1,0 +1,2 @@
+# Zen Browser
+export PATH="/opt/zen:$PATH"

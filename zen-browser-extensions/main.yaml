@@ -1,0 +1,38 @@
+depends:
+  - zen-browser
+
+actions:
+  # Create the Zen extensions directory (houses pre-installed global XPIs)
+  - action: command.run
+    command: sudo
+    args: [mkdir, -p, /opt/zen/browser/extensions]
+
+  # Create the distribution directory (houses enterprise policies)
+  - action: command.run
+    command: sudo
+    args: [mkdir, -p, /opt/zen/distribution]
+
+  # Stage the downloader script and run it as root so it can write to /opt/zen/
+  - action: file.copy
+    from: download-extensions.sh
+    to: /tmp/zen-download-extensions.sh
+    chmod: "0755"
+
+  - action: command.run
+    command: sudo
+    args: [bash, /tmp/zen-download-extensions.sh]
+
+  - action: file.remove
+    target: /tmp/zen-download-extensions.sh
+
+  # Stage policies.json and install it under the Zen distribution directory
+  - action: file.copy
+    from: policies.json
+    to: /tmp/zen-policies.json
+
+  - action: command.run
+    command: sudo
+    args: [cp, /tmp/zen-policies.json, /opt/zen/distribution/policies.json]
+
+  - action: file.remove
+    target: /tmp/zen-policies.json

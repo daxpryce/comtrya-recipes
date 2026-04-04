@@ -1,0 +1,37 @@
+actions:
+  # Download the Zen Browser tarball
+  - action: file.download
+    from: https://github.com/zen-browser/desktop/releases/latest/download/zen.linux-x86_64.tar.xz
+    to: /tmp/zen-browser.tar.xz
+
+  # Extract into /opt/ — the tarball's top-level dir is "zen", producing /opt/zen/
+  - action: command.run
+    command: sudo
+    args:
+      - tar
+      - -xJf
+      - /tmp/zen-browser.tar.xz
+      - -C
+      - /opt/
+
+  # Clean up the downloaded archive
+  - action: file.remove
+    target: /tmp/zen-browser.tar.xz
+
+  # Ensure ~/.bashrc.d exists
+  - action: directory.create
+    path: "{{ user.home_dir }}/.bashrc.d"
+
+  # Drop a PATH snippet so shells can find /opt/zen/zen
+  - action: file.copy
+    from: zen-bashrc
+    to: "{{ user.home_dir }}/.bashrc.d/zen"
+
+  # Ensure ~/.local/share/applications exists
+  - action: directory.create
+    path: "{{ user.home_dir }}/.local/share/applications"
+
+  # Install the .desktop launcher
+  - action: file.copy
+    from: zen.desktop
+    to: "{{ user.home_dir }}/.local/share/applications/zen.desktop"

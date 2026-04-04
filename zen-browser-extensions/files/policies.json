@@ -1,0 +1,18 @@
+{
+  "policies": {
+    "ExtensionSettings": {
+      "uBlock0@raymondhill.net": {
+        "installation_mode": "force_installed",
+        "install_url": "file:///opt/zen/browser/extensions/uBlock0@raymondhill.net.xpi"
+      },
+      "{446900e4-71c2-419f-a6a7-df9c091e268b}": {
+        "installation_mode": "force_installed",
+        "install_url": "file:///opt/zen/browser/extensions/{446900e4-71c2-419f-a6a7-df9c091e268b}.xpi"
+      },
+      "search@kagi.com": {
+        "installation_mode": "force_installed",
+        "install_url": "file:///opt/zen/browser/extensions/search@kagi.com.xpi"
+      }
+    }
+  }
+}

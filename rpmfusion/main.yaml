@@ -1,0 +1,7 @@
+actions:
+  - action: package.install
+    where: 'os.distribution == "Fedora"'
+    list: 
+    - 'https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ os.version | split(pat=".") | first }}.noarch.rpm'
+    - 'https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ os.version | split(pat=".") | first }}.noarch.rpm'
+

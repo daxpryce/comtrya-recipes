@@ -1,0 +1,41 @@
+{
+  "policies": {
+    "PictureInPicture": {
+      "Enabled": false
+    },
+    "DNSOverHTTPS": {
+      "Enabled": false
+    },
+    "PasswordManagerEnabled": false,
+    "Preferences": {
+      "browser.aboutConfig.showWarning": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.urlbar.suggest.clipboard": {
+        "Value": false,
+	"Status": "default"
+      },
+      "browser.urlbar.suggest.engines": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.urlbar.suggest.openpage": {
+        "Value": false,
+        "Status": "default"
+      },
+      "browser.urlbar.suggest.bookmark": {
+        "Value": false,
+        "Status": "default"
+      },
+      "signon.firefoxRelay.feature": {
+        "Value": "disabled",
+        "Status": "default"
+      },
+      "signon.rememberSignons": {
+	 "Value": "false",
+         "Status": "default"
+      }	 
+    }
+  }
+}

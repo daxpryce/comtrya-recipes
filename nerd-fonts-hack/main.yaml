@@ -1,0 +1,68 @@
+actions:
+  # Ensure the user fonts directory exists
+  - action: directory.create
+    path: "{{ user.home_dir }}/.local/share/fonts"
+
+  # Install all Hack Nerd Font variants
+  - action: file.copy
+    from: HackNerdFont-Regular.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFont-Regular.ttf"
+
+  - action: file.copy
+    from: HackNerdFont-Bold.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFont-Bold.ttf"
+
+  - action: file.copy
+    from: HackNerdFont-Italic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFont-Italic.ttf"
+
+  - action: file.copy
+    from: HackNerdFont-BoldItalic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFont-BoldItalic.ttf"
+
+  - action: file.copy
+    from: HackNerdFontMono-Regular.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontMono-Regular.ttf"
+
+  - action: file.copy
+    from: HackNerdFontMono-Bold.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontMono-Bold.ttf"
+
+  - action: file.copy
+    from: HackNerdFontMono-Italic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontMono-Italic.ttf"
+
+  - action: file.copy
+    from: HackNerdFontMono-BoldItalic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontMono-BoldItalic.ttf"
+
+  - action: file.copy
+    from: HackNerdFontPropo-Regular.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontPropo-Regular.ttf"
+
+  - action: file.copy
+    from: HackNerdFontPropo-Bold.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontPropo-Bold.ttf"
+
+  - action: file.copy
+    from: HackNerdFontPropo-Italic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontPropo-Italic.ttf"
+
+  - action: file.copy
+    from: HackNerdFontPropo-BoldItalic.ttf
+    to: "{{ user.home_dir }}/.local/share/fonts/HackNerdFontPropo-BoldItalic.ttf"
+
+  # Rebuild the font cache so the new fonts are immediately available
+  - action: command.run
+    command: fc-cache
+    args:
+      - -fv
+
+  # Set Hack Nerd Font Mono Regular as the Cinnamon system monospace font
+  - action: command.run
+    command: gsettings
+    args:
+      - set
+      - org.gnome.desktop.interface
+      - monospace-font-name
+      - Hack Nerd Font Mono Regular 10

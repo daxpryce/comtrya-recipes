@@ -1,0 +1,43 @@
+actions:
+  - action: file.copy
+    where: 'os.name == "linux"'
+    from: merge.sh
+    to: /tmp/zen-merge-policies.sh
+    chmod: "0755"
+
+  - action: file.copy
+    where: 'os.name == "linux"'
+    from: policies-update.json
+    to: /tmp/policies-update.json
+
+  - action: command.run
+    where: 'os.name == "linux"'
+    privileged: true
+    command: bash
+    args: 
+    - /tmp/zen-merge-policies.sh
+    - /tmp/policies-update.json
+    - /opt/zen/distribution/policies.json
+    - /tmp/policies.json
+
+  - action: command.run
+    where: 'os.name == "linux"'
+    privileged: true
+    command: cp
+    args: ["/tmp/policies.json", "/opt/zen/distribution/policies.json"]
+
+  - action: command.run
+    where: 'os.name=="linux"'
+    privileged: true
+    command: rm
+    args: ["/tmp/policies.json"]
+
+  - action: file.remove
+    where: 'os.name == "linux"'
+    target: /tmp/zen-merge-policies.sh
+
+  - action: file.remove
+    where: 'os.name == "linux"'
+    target: /tmp/policies-update.json
+
+

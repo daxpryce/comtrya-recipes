@@ -1,0 +1,10 @@
+actions:
+  - action: package.install
+    name: vim
+    variants:
+      - where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+        name: vim
+        provider: apt
+      - where: 'os.distribution == "Fedora"'
+        name: vim
+        provider: dnf
