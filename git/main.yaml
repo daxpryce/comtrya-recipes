@@ -1,0 +1,15 @@
+actions:
+  - action: command.run
+    command: add-apt-repository
+    privileged: true
+    args: [ppa:git-core/ppa]
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+
+  - action: command.run
+    command: apt
+    privileged: true
+    args: [update]
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+
+  - action: package.install
+    name: git
