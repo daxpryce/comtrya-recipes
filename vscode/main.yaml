@@ -1,0 +1,34 @@
+actions:
+  # ── Download latest VS Code .deb (Ubuntu / Linux Mint) ─────────────
+  - action: file.download
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    from: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+    to: /tmp/code.deb
+
+  # ── Install the .deb package ────────────────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    name: /tmp/code.deb
+    file: true
+
+  # ── Clean up .deb ──────────────────────────────────────────────────
+  - action: file.remove
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    target: /tmp/code.deb
+
+  # ── Download latest VS Code .rpm (Fedora) ───────────────────────────
+  - action: file.download
+    where: 'os.distribution == "Fedora"'
+    from: https://code.visualstudio.com/sha/download?build=stable&os=linux-rpm-x64
+    to: /tmp/code.rpm
+
+  # ── Install the .rpm package ────────────────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Fedora"'
+    name: /tmp/code.rpm
+    file: true
+
+  # ── Clean up .rpm ──────────────────────────────────────────────────
+  - action: file.remove
+    where: 'os.distribution == "Fedora"'
+    target: /tmp/code.rpm

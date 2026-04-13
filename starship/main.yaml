@@ -1,0 +1,20 @@
+depends:
+  - bashrcd-standard
+
+actions:
+  - action: file.download
+    where: os.distribution == "Ubuntu" || os.distribution == "Fedora" || os.distribution == "Linux Mint"
+    from: https://starship.rs/install.sh
+    to: /tmp/starship-install.sh
+
+  - action: command.run
+    where: os.distribution == "Ubuntu" || os.distribution == "Fedora" || os.distribution == "Linux Mint"
+    command: sh
+    args:
+      - /tmp/starship-install.sh
+      - --yes
+    privileged: true
+
+  - action: file.copy
+    from: starship.sh
+    to: "{{ user.home_dir }}/.bashrc.d/starship.sh"

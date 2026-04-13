@@ -1,0 +1,12 @@
+actions:
+  # ── Install just via apt (Ubuntu / Linux Mint) ──────────────────────
+  - action: package.install
+    name: just
+    provider: apt
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+
+  # ── Install just via dnf (Fedora) ───────────────────────────────────
+  - action: package.install
+    name: just
+    provider: dnf
+    where: 'os.distribution == "Fedora"'

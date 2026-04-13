@@ -1,0 +1,34 @@
+actions:
+  # ── Set up the Cloudsmith apt repository (Ubuntu / Linux Mint) ──────
+  - action: command.run
+    command: bash
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args:
+      - -c
+      - >-
+        curl -1sLf 'https://dl.cloudsmith.io/public/task/task/setup.deb.sh'
+        | bash
+
+  # ── Install Task via apt (Ubuntu / Linux Mint) ──────────────────────
+  - action: package.install
+    name: task
+    provider: apt
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+
+  # ── Set up the Cloudsmith dnf repository (Fedora) ──────────────────
+  - action: command.run
+    command: bash
+    privileged: true
+    where: 'os.distribution == "Fedora"'
+    args:
+      - -c
+      - >-
+        curl -1sLf 'https://dl.cloudsmith.io/public/task/task/setup.rpm.sh'
+        | bash
+
+  # ── Install Task via dnf (Fedora) ─────────────────────────────────
+  - action: package.install
+    name: task
+    provider: dnf
+    where: 'os.distribution == "Fedora"'

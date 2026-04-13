@@ -1,0 +1,123 @@
+actions:
+  # ── Remove conflicting distro-provided Docker packages (apt-based) ──
+  - action: command.run
+    command: apt-get
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args:
+      - remove
+      - -y
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - docker-compose-v2
+      - podman-docker
+      - containerd
+      - runc
+
+  # ── Remove conflicting distro-provided Docker packages (Fedora) ─────
+  # Wrapped with || true because dnf exits non-zero when none are installed
+  - action: command.run
+    command: bash
+    privileged: true
+    where: 'os.distribution == "Fedora"'
+    args:
+      - -c
+      - >-
+        dnf remove -y
+        docker docker-client docker-client-latest docker-common
+        docker-latest docker-latest-logrotate docker-logrotate
+        docker-selinux docker-engine-selinux docker-engine
+        || true
+
+  # ── Install prerequisites for repository setup (apt-based) ──────────
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    list:
+      - ca-certificates
+      - curl
+
+  # ── Create /etc/apt/keyrings for the Docker GPG key ────────────────
+  - action: command.run
+    command: install
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args: [-m, "0755", -d, /etc/apt/keyrings]
+
+  # ── Download Docker GPG key (Ubuntu / Linux Mint) ───────────────────
+  - action: command.run
+    command: bash
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args:
+      - -c
+      - >-
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg
+        -o /etc/apt/keyrings/docker.asc
+        && chmod a+r /etc/apt/keyrings/docker.asc
+
+  # ── Add Docker apt repository (Ubuntu / Linux Mint) ─────────────────
+  # Uses UBUNTU_CODENAME for Mint (maps to upstream Ubuntu release)
+  - action: command.run
+    command: bash
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args:
+      - -c
+      - >-
+        echo "deb [arch=$(dpkg --print-architecture)
+        signed-by=/etc/apt/keyrings/docker.asc]
+        https://download.docker.com/linux/ubuntu
+        $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+        stable" > /etc/apt/sources.list.d/docker.list
+
+  # ── Refresh apt cache after adding Docker repository ────────────────
+  - action: command.run
+    command: apt-get
+    privileged: true
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    args: [update]
+
+  # ── Add Docker dnf repository (Fedora) ──────────────────────────────
+  - action: command.run
+    command: dnf
+    privileged: true
+    where: 'os.distribution == "Fedora"'
+    args:
+      - config-manager
+      - addrepo
+      - --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+
+  # ── Install Docker Engine (apt-based) ───────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    provider: apt
+    list:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+
+  # ── Install Docker Engine (Fedora) ──────────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Fedora"'
+    provider: dnf
+    list:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+
+  # ── Enable and start the Docker daemon ──────────────────────────────
+  - action: command.run
+    command: systemctl
+    privileged: true
+    args: [enable, --now, docker]
+
+  # ── Add current user to the docker group ────────────────────────────
+  - action: user.group
+    username: "{{ user.username }}"
+    group:
+      - docker

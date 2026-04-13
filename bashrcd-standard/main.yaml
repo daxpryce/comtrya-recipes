@@ -1,0 +1,22 @@
+actions:
+  - action: command.run
+    where: os.distribution == "Ubuntu" || os.distribution == "Linux Mint"
+    command: mkdir
+    args:
+      - -p
+      - "{{ user.home_dir }}/.bashrc.d"
+
+  - action: file.copy
+    where: os.distribution == "Ubuntu" || os.distribution == "Linux Mint"
+    from: setup-bashrcd.sh
+    to: /tmp/setup-bashrcd.sh
+
+  - action: command.run
+    where: os.distribution == "Ubuntu" || os.distribution == "Linux Mint"
+    command: bash
+    args:
+      - /tmp/setup-bashrcd.sh
+
+  - action: file.remove
+    where: os.distribution == "Ubuntu" || os.distribution == "Linux Mint"
+    target: /tmp/setup-bashrcd.sh

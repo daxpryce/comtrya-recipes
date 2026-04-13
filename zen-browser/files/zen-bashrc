@@ -1,2 +1,4 @@
 # Zen Browser
-export PATH="/opt/zen:$PATH"
+if [[ ":${PATH}:" != *":/opt/zen:"* ]]; then
+    export PATH="/opt/zen:$PATH"
+fi
