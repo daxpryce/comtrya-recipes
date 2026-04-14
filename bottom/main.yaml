@@ -1,0 +1,30 @@
+actions:
+  # ── Download the latest bottom release package ─────────────────────
+  - action: command.run
+    command: bash
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint" || os.distribution == "Fedora"'
+    args:
+      - files/latest.sh
+      - "{{ os.distribution }}"
+      - /tmp
+
+  # ── Install bottom via .deb (Ubuntu / Linux Mint) ──────────────────
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    name: /tmp/bottom.deb
+    provider: apt
+
+  # ── Install bottom via .rpm (Fedora) ───────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Fedora"'
+    name: /tmp/bottom.rpm
+    provider: dnf
+
+  # ── Clean up downloaded package ────────────────────────────────────
+  - action: file.remove
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    target: /tmp/bottom.deb
+
+  #- action: file.remove
+  #  where: 'os.distribution == "Fedora"'
+  #  target: /tmp/bottom.rpm

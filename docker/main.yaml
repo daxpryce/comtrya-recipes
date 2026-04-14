@@ -57,7 +57,12 @@ actions:
         && chmod a+r /etc/apt/keyrings/docker.asc
 
   # ── Add Docker apt repository (Ubuntu / Linux Mint) ─────────────────
-  # Uses UBUNTU_CODENAME for Mint (maps to upstream Ubuntu release)
+  # ── Add Docker apt repository (Ubuntu / Linux Mint) ──────────────────
+  # NOTE: We intentionally source /etc/os-release here instead of using
+  # comtrya's {{ os.codename }}. On Linux Mint, Docker's apt repo requires
+  # the *upstream Ubuntu* codename (e.g. "noble"), which os-release exposes
+  # as UBUNTU_CODENAME. Comtrya's os.codename would return the Mint-specific
+  # codename (e.g. "wilma"), which Docker doesn't publish packages for.
   - action: command.run
     command: bash
     privileged: true

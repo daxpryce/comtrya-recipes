@@ -1,0 +1,488 @@
+# llms.txt — Comtrya Documentation Reference
+# Source: https://comtrya.dev
+# Last updated: 2026-04-14
+
+> Comtrya is a permissively licensed Open Source tool built in Rust.
+> It provisions and configures systems through simple YAML or TOML manifests.
+> Source: https://github.com/comtrya/comtrya
+
+## Supported Systems
+
+- FreeBSD
+- Linux
+- macOS
+- NetBSD
+- Windows
+
+## Installation
+
+```bash
+# Shell script (pre-compiled binary)
+curl -fsSL https://get.comtrya.dev | sh
+
+# Specific version
+curl -fsSL https://get.comtrya.dev | VERSION=v0.9.2 sh
+
+# Via cargo
+cargo install comtrya
+```
+
+## CLI Usage
+
+```bash
+# Run all manifests in current directory
+comtrya apply
+
+# Run all manifests in a specified directory
+comtrya -d ./manifests apply
+
+# Run specific manifests
+comtrya -d ./ apply -m one,two,three
+
+# With a config file
+comtrya -d ./ -c /path/to/Comtrya.yaml
+
+# Remote manifests from a Git repository
+comtrya -d https://github.com/user/repo apply
+
+# Remote with branch and path
+comtrya -d https://github.com/user/repo#main:dotfiles apply
+
+# Define variables via CLI
+comtrya -v -d ./ --defines foo=bar apply -m sample
+
+# List available contexts (OS, user, env info)
+comtrya contexts
+comtrya contexts --show-values
+
+# List manifest status
+comtrya status
+
+# Generate shell completions
+comtrya gen-completions bash
+comtrya gen-completions fish
+```
+
+## Manifests
+
+Manifests are YAML or TOML files composed of actions and dependencies.
+Each recipe directory has a `main.yaml` entrypoint, with optional `files/` subdirectory for assets.
+
+### YAML Example
+
+```yaml
+actions:
+  - action: command.run
+    command: echo
+    args:
+      - hi
+```
+
+### TOML Example
+
+```toml
+[[actions]]
+action = "command.run"
+command = "echo"
+args = [ "hi" ]
+```
+
+## Dependencies
+
+Manifests can depend on other manifests, ensuring ordering:
+
+```yaml
+depends:
+  - groups
+
+actions:
+  - action: user.add
+    fullname: testuser
+    home_dir: /home/test
+    username: test
+    group:
+      - testgroup
+```
+
+## Contexts (Template Variables)
+
+Comtrya provides context variables usable in manifests via Jinja-style templates `{{ ... }}`:
+
+### Available Context Groups
+
+- `env.*` — environment variables (COLORTERM, HOME, PATH, SHELL, etc.)
+- `os.bitness` — e.g. "64-bit"
+- `os.codename` — e.g. "noble"
+- `os.distribution` — e.g. "Ubuntu", "Fedora", "Linux Mint"
+- `os.edition`
+- `os.family` — e.g. "unix"
+- `os.hostname`
+- `os.name` — e.g. "linux", "macos"
+- `os.version` — e.g. "24.04", "43"
+- `user.config_dir`
+- `user.data_dir`
+- `user.data_local_dir`
+- `user.document_dir`
+- `user.home_dir`
+- `user.id`
+- `user.name`
+- `user.username`
+- `variables.*` — user-defined variables from Comtrya.yaml or CLI --defines
+- `include_variables.*` — included variable files
+
+### Template Examples
+
+```yaml
+to: "{{ user.home_dir }}/.config/app/config.toml"
+```
+
+```yaml
+# Tera filter for version parsing
+list:
+  - "https://example.com/release-{{ os.version | split(pat=\".\") | first }}.rpm"
+```
+
+Variables can be defined in `Comtrya.yaml`:
+
+```yaml
+privilege: sudo
+variables:
+  test: "one"
+```
+
+Or via CLI:
+
+```bash
+comtrya --defines foo=bar apply
+```
+
+Used in manifests as `{{ variables.foo }}`.
+
+## Variants and Where Clauses
+
+All actions support `where` for conditional execution and `variants` for per-condition overrides.
+
+### Where Clause (skip/run actions conditionally)
+
+```yaml
+- action: command.run
+  where: os.name == "linux"
+  command: echo
+  args:
+    - Hello Linux
+```
+
+```yaml
+- action: package.install
+  where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+  name: curl
+  provider: apt
+```
+
+### Variants (override action fields per condition)
+
+```yaml
+- action: command.run
+  command: echo
+  args:
+    - hello, world!
+  variants:
+    - where: os.name == "linux"
+      command: reboot
+    - where: os.name == "macos"
+      command: echo
+      args: ["Hello", "macOS"]
+    - where: os.distribution == "Ubuntu"
+      command: echo
+      args: ["Hi,", "Ubuntu"]
+```
+
+## Privilege Escalation
+
+Actions can be run with elevated privileges:
+
+```yaml
+- action: command.run
+  command: whoami
+  privileged: true
+```
+
+Providers: `sudo` (default), `doas`, `run0`. Configured in `Comtrya.yaml`:
+
+```yaml
+privilege: doas
+```
+
+## Actions Reference
+
+### command.run (alias: cmd.run)
+
+Run arbitrary commands.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `command.run` |
+| command | string | no | command to run |
+| args | list[string] | yes | arguments |
+| dir | string | yes | working directory |
+| privileged | bool | yes | elevate privileges |
+| env | map[string,string] | yes | scoped environment variables |
+
+```yaml
+- action: command.run
+  dir: .
+  command: echo
+  args:
+    - Hello world
+
+- action: command.run
+  command: go
+  args:
+    - env
+  env:
+    GOBIN: /Users/test
+```
+
+### file.copy
+
+Copy a file. Source must be under a `files/` directory in the manifest.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.copy` |
+| from | string | no | source file (relative to files/) |
+| to | string | no | destination path |
+| template | bool | yes | render with context providers (default: false) |
+| chmod | integer | yes | octal permissions |
+| owned_by_user | string | yes | user for chown |
+| owned_by_group | string | yes | group for chown |
+
+```yaml
+- action: file.copy
+  from: procs-config.toml
+  to: "{{ user.config_dir }}/procs/config.toml"
+```
+
+### file.download
+
+Download a file from a URL.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.download` |
+| from / source | string | no | URL |
+| to / target | string | no | local destination |
+| owned_by_user | string | yes | user for chown |
+| owned_by_group | string | yes | group for chown |
+
+```yaml
+- action: file.download
+  from: https://example.com/file.tar.gz
+  to: /tmp/file.tar.gz
+```
+
+### file.link
+
+Create symlinks.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.link` |
+| from | string | no | symlink location |
+| to | string | no | symlink target |
+| walk_dir | bool | yes | walk files in directory (default: false) |
+| source | string | yes | used with walk_dir in lieu of from |
+
+### file.remove
+
+Remove a file.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.remove` |
+| target | string | no | file to remove |
+
+### file.chown
+
+Change file ownership (requires root).
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.chown` |
+| path | string | no | file path |
+| user | string | no | owner user |
+| group | string | no | owner group |
+
+### file.unarchive
+
+Extract a tar.gz archive.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `file.unarchive` |
+| from | string | no | path to archive |
+| to | string | no | extraction destination |
+| force | bool | yes | force unarchiving (default: true) |
+
+```yaml
+- action: file.download
+  from: https://github.com/example/repo/archive/refs/tags/v1.0.tar.gz
+  to: /tmp/archive
+
+- action: file.unarchive
+  from: /tmp/archive
+  to: /tmp/
+```
+
+### directory.copy
+
+Copy a directory.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `directory.copy` |
+| from | string | no | source directory |
+| to | string | no | destination directory |
+
+### directory.create
+
+Create a directory.
+
+```yaml
+- action: directory.create
+  path: "{{ user.home_dir }}/.config/app"
+```
+
+### package.install
+
+Install packages via system package manager.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `package.install` |
+| name | string | no | package name (or local file path) |
+| list | list[string] | yes | multiple packages |
+| provider | string | yes | package manager provider |
+| repository | string | yes | specific repository |
+| file | bool | yes | treat name as local file path (default: false) |
+
+Supported providers: pacman/yay, paru (Arch), apt (Debian/Ubuntu), pkg (FreeBSD), pkgin (NetBSD), brew (macOS), winget (Windows), xbps (Void), zypper (OpenSUSE), dnf (Fedora), snapcraft (Linux), macports (macOS).
+
+```yaml
+# Default provider
+- action: package.install
+  name: curl
+
+# Multiple packages
+- action: package.install
+  list:
+    - curl
+    - wget
+
+# Specific provider
+- action: package.install
+  name: curl
+  provider: apt
+
+# Install from URL (supported by some providers like dnf)
+- action: package.install
+  list:
+    - "https://example.com/package.rpm"
+
+# Local file install (supported by pkg, aptitude)
+- action: package.install
+  name: /path/to/package.pkg
+  file: true
+```
+
+### package.repository
+
+Add a package repository.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| name | string | no | alias of url |
+| key.url | string | no | key URL |
+| key.name | string | yes | key name |
+| key.fingerprint | string | yes | key fingerprint |
+| provider | string | yes | package manager |
+
+### binary.github
+
+Download a binary from a GitHub release.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `binary.github` |
+| name | string | no | local binary name |
+| directory | string | no | target directory |
+| repository | string | no | GitHub repo (owner/repo) |
+| version | string | no | version/tag |
+
+```yaml
+- action: binary.github
+  name: comtrya
+  directory: /usr/local/bin
+  repository: comtrya/comtrya
+  version: v0.8.7
+```
+
+### git.clone (0.9.1+)
+
+Clone a Git repository.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `git.clone` |
+| repo_url | string | no | repository URL |
+| directory | string | no | clone destination |
+
+```yaml
+- action: git.clone
+  repo_url: https://github.com/comtrya/comtrya
+  directory: /home/user/code/comtrya/
+```
+
+### group.add
+
+Add a system group.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `group.add` |
+| group_name | string | no | group name |
+
+### user.add
+
+Add a system user.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `user.add` |
+| fullname | string | no | full name |
+| home_dir | string | no | home directory |
+| username | string | no | username |
+| shell | string | yes | user shell |
+| group | list[string] | yes | groups to add user to |
+
+### user.group
+
+Add an existing user to groups.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `user.group` |
+| username | string | no | username |
+| group | list[string] | no | groups to add to |
+
+### macos.default
+
+Set macOS defaults.
+
+| Key | Type | Optional | Description |
+|-----|------|----------|-------------|
+| action | string | no | `macos.default` |
+| domain | string | no | defaults domain |
+| key | string | no | key name |
+| kind | string | no | value type (string, bool, int) |
+| value | string | no | value |
