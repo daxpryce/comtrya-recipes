@@ -86,8 +86,9 @@ Source: https://docs.rs/os_info/latest/src/os_info/os_type.rs.html (the `Display
 
 ### File Permissions (chmod)
 
-- Always use **4-octet quoted strings** for `chmod` values: `chmod: "0755"`, not `chmod: 755`.
-- Bare integers cause a YAML parse error in Comtrya (`invalid type: integer, expected a string`).
+- The `chmod` value must be a **string**, not a bare integer. YAML parses bare `755` as an integer, which Comtrya rejects (`invalid type: integer, expected a string`).
+- Valid: `chmod: "0755"`, `chmod: "755"`, or `chmod: 0755` (YAML treats the leading zero as an octal string literal).
+- Invalid: `chmod: 755` (parsed as integer by YAML).
 
 ### Style
 
