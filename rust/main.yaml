@@ -6,7 +6,7 @@ actions:
   - action: file.copy
     from: install-rust.sh
     to: /tmp/install-rust.sh
-    chmod: 755
+    chmod: "0755"
 
   - action: command.run
     command: bash

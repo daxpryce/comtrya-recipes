@@ -1,0 +1,18 @@
+actions:
+  # ── Install tealdeer via apt (Ubuntu / Linux Mint) ──────────────────
+  - action: package.install
+    where: 'os.distribution == "Ubuntu" || os.distribution == "Linux Mint"'
+    name: tealdeer
+    provider: apt
+
+  # ── Install tealdeer via dnf (Fedora) ───────────────────────────────
+  - action: package.install
+    where: 'os.distribution == "Fedora"'
+    name: tealdeer
+    provider: dnf
+
+  # ── Prime the tldr page cache ──────────────────────────────────────
+  - action: command.run
+    command: tldr
+    args:
+      - --update

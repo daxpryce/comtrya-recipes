@@ -6,7 +6,7 @@ actions:
   - action: file.copy
     from: install-go.sh
     to: /tmp/install-go.sh
-    chmod: 755
+    chmod: "0755"
 
   - action: command.run
     command: bash

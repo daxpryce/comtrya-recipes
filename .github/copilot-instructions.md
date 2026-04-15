@@ -84,6 +84,11 @@ Source: https://docs.rs/os_info/latest/src/os_info/os_type.rs.html (the `Display
 - Make scripts accept configurable arguments (e.g. destination directory) rather than hardcoding paths.
 - Prefer passing Comtrya context variables as script arguments over having scripts detect system info themselves.
 
+### File Permissions (chmod)
+
+- Always use **4-octet quoted strings** for `chmod` values: `chmod: "0755"`, not `chmod: 755`.
+- Bare integers cause a YAML parse error in Comtrya (`invalid type: integer, expected a string`).
+
 ### Style
 
 - Use comments to label sections, especially when the same logical step has distro-specific variants.
