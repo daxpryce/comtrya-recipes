@@ -1,0 +1,22 @@
+depends:
+  - bashrcd-standard
+
+actions:
+  # ── Install Rust via rustup (All Distros) ──
+  - action: file.copy
+    from: install-rust.sh
+    to: /tmp/install-rust.sh
+    chmod: 755
+
+  - action: command.run
+    command: bash
+    args:
+      - /tmp/install-rust.sh
+
+  - action: file.remove
+    target: /tmp/install-rust.sh
+
+  # ── bashrc.d integration ──
+  - action: file.copy
+    from: rust.sh
+    to: "{{ user.home_dir }}/.bashrc.d/rust.sh"

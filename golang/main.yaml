@@ -1,0 +1,23 @@
+depends:
+  - bashrcd-standard
+
+actions:
+  # ── Install Go (All Distros) ──
+  - action: file.copy
+    from: install-go.sh
+    to: /tmp/install-go.sh
+    chmod: 755
+
+  - action: command.run
+    command: bash
+    args:
+      - /tmp/install-go.sh
+    privileged: true
+
+  - action: file.remove
+    target: /tmp/install-go.sh
+
+  # ── bashrc.d integration ──
+  - action: file.copy
+    from: golang.sh
+    to: "{{ user.home_dir }}/.bashrc.d/golang.sh"
